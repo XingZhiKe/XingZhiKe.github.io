@@ -6,16 +6,16 @@
 # 'jekyll serve'. If you change this file, please restart the server process.
 
 # Site settings
-title: Shen-Xmas
+title: 行知客
 brief-intro: Java / Golang / Python
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://shen-xmas.github.io/" # the base hostname & protocol for your site
+url: "https://xingzhike.github.io/" # the base hostname & protocol for your site
 
 permalink: /:year/:month/:day/:title/
 
 # other links
-github_username: Shen-Xmas
-email: navidadshen@foxmail.com
+github_username: xingzhike
+email: wwj_5_209@163.com
 
 description_footer: 一些学习和思考, 希望可以做好一些事。                    
 
