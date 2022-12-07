@@ -1,69 +1,105 @@
-# Shen-Xmas's Blog
+<div align="center">
 
-个人博客项目, fork自大佬HyG。
+  # Chirpy Jekyll Theme
 
-做了一些个人改动。这里记录下各个文件的用途, 也帮助别的像我一样的后端迅速上手。
+  A minimal, responsive, and powerful Jekyll theme for presenting professional writing.
 
-## 1 左上角标题及简介以及下方的介绍
+  [![Gem Version](https://img.shields.io/gem/v/jekyll-theme-chirpy?color=brightgreen)](https://rubygems.org/gems/jekyll-theme-chirpy)
+  [![CI](https://github.com/cotes2020/jekyll-theme-chirpy/actions/workflows/ci.yml/badge.svg)](https://github.com/cotes2020/jekyll-theme-chirpy/actions/workflows/ci.yml)
+  [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4e556876a3c54d5e8f2d2857c4f43894)](https://www.codacy.com/gh/cotes2020/jekyll-theme-chirpy/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cotes2020/jekyll-theme-chirpy&amp;utm_campaign=Badge_Grade)
+  [![GitHub license](https://img.shields.io/github/license/cotes2020/jekyll-theme-chirpy.svg)](https://github.com/cotes2020/jekyll-theme-chirpy/blob/master/LICENSE)
+  [![996.icu](https://img.shields.io/badge/link-996.icu-%23FF4D5B.svg)](https://996.icu)
 
-变量都位于_config.yaml文件,直接修改即可。
-- title 左上角标题
-- brief-intro 左上角简介
-- description_footer 下方的小字
+  [**Live Demo →**](https://cotes2020.github.io/chirpy-demo)
 
-## 2 评论和访客数
+  [![Devices Mockup](https://raw.githubusercontent.com/cotes2020/chirpy-images/main/commons/devices-mockup.png)](https://cotes2020.github.io/chirpy-demo)
 
-评论使用的是Disqus插件。访问量使用的百度统计。不是放在逻辑里用代码写的。
+</div>
 
-注册自己对应的账号ID等.. 直接在_config,yaml中修改对应变量即可。
+## Features
 
-## 3 文章
+- Localized Layout
+- Dark/Light Theme Mode
+- Pinned Posts
+- Hierarchical Categories
+- Last Modified Date for Posts
+- Table of Contents
+- Auto-generated Related Posts
+- Syntax Highlighting
+- Mathematical Expressions
+- Mermaid Diagram & Flowchart
+- Disqus/Utterances/Giscus Comments
+- Search
+- Atom Feeds
+- Google Analytics
+- GA Pageviews Reporting
+- SEO & Performance Optimization
 
-文章都放置在_posts中, 需要按特定格式书写, 是markdown格式。
 
-## 4 Home Archives Categories 和 Tags
+## Quick Start
 
-这些的展现逻辑都已经写好了, 不用动。
-- Archives是按照时间排序。
-- Categories是按类别排序。
-- Tags是按照tag过滤。
-文章开头都会填写这些字段的值, 多字段直接空格隔开即可, 如:
-```markdown
----
-layout: post
-title:  "填写需要的标题"
-categories: Java Python Golang
-tags:  Java Python Golang
-author: Shen-Xmas
----
+Before starting, please follow the instructions in the [Jekyll Docs](https://jekyllrb.com/docs/installation/) to complete the installation of `Ruby`, `RubyGems`, `Jekyll`, and `Bundler`. In addition, [Git](https://git-scm.com/) is also required to be installed.
 
-* content
-{:toc}
+### Step 1. Creating a New Site
 
-```
-然后接下来就可以按照markdown的格式书写内容了。
+Create a new repository from the [**Chirpy Starter**](https://github.com/cotes2020/chirpy-starter/generate) and name it `<GH_USERNAME>.github.io`, where `GH_USERNAME` represents your GitHub username.
 
-## 5 Collections
+### Step 2. Installing Dependencies
 
-算是收藏集合, 位于/page/3collections.md
+Before running for the first time, go to the root directory of your site, and install dependencies as follows:
 
-直接在中间内容部分按照markdown形式更改即可。一般使用简介+链接的形式记录。
-
-## 6 Demo
-
-主要用来介绍自己一些项目的地方。为了简单我的已经把图片展示去掉了。主要留文字简介和链接。
-
-更改位置是/js/waterfall.js。在demoContent变量中增减值即可。按照字段内容填写。
-```
-{
-  demo_link: 'https://github.com/Shen-Xmas/spring-boot-demo',
-  code_link: 'https://github.com/Shen-Xmas/spring-boot-demo',
-  title: 'Java Spring-Boot demos',
-  core_tech: 'Java, Spring Boot, 各种中间件 ..',
-  description: '适合初学者入门的一些demo, 个人的一些学习思考, 欢迎指正. 详情见 <a href ="https://github.com/Shen-Xmas/spring-boot-demo">这里</a>。'
-}
+```console
+$ bundle
 ```
 
-## 7 About
+### Step 3. Running Local Server
 
-主要用来介绍自己以及留下联系方式。更改位置位于/page/4about.md。
+Run the following command in the root directory of the site:
+
+```console
+$ bundle exec jekyll s
+```
+
+Or run with Docker:
+
+```console
+$ docker run -it --rm \
+    --volume="$PWD:/srv/jekyll" \
+    -p 4000:4000 jekyll/jekyll \
+    jekyll serve
+```
+
+After a while, navigate to the site at <http://localhost:4000>.
+
+## Documentation
+
+For more details on usage, please refer to the tutorial on the [demo website](https://cotes2020.github.io/chirpy-demo/) / [wiki](https://github.com/cotes2020/jekyll-theme-chirpy/wiki). Note that the tutorial is based on the [latest release](https://github.com/cotes2020/jekyll-theme-chirpy/releases/latest), and the features of the default branch are usually ahead of the documentation.
+
+## Contributing
+
+Welcome to report bugs, improve code quality or submit a new feature. For more information, see [contributing guidelines](.github/CONTRIBUTING.md).
+
+## Credits
+
+This theme is mainly built with [Jekyll](https://jekyllrb.com/) ecosystem, [Bootstrap](https://getbootstrap.com/), [Font Awesome](https://fontawesome.com/) and some other wonderful tools (their copyright information can be found in the relevant files). The avatar and favicon design come from [Clipart Max](https://www.clipartmax.com/middle/m2i8b1m2K9Z5m2K9_ant-clipart-childrens-ant-cute/).
+
+:tada: Thanks to all the volunteers who contributed to this project, their GitHub IDs are on [this list](https://github.com/cotes2020/jekyll-theme-chirpy/graphs/contributors). Also, I won't forget those guys who submitted the issues or unmerged PR because they reported bugs, shared ideas, or inspired me to write more readable documentation.
+
+Last but not least, thank [JetBrains][jb] for providing the OSS development license.
+
+## Sponsoring
+
+If you like this theme or find it helpful, please consider sponsoring me, because it will encourage and help me better maintain the project, I will be very grateful!
+
+[![Ko-fi](https://img.shields.io/badge/-Buy%20Me%20a%20Coffee-ff5f5f?logo=ko-fi&logoColor=white)](https://ko-fi.com/coteschung)
+[![Wechat Pay](https://img.shields.io/badge/-Tip%20Me%20on%20WeChat-brightgreen?logo=wechat&logoColor=white)][cn-donation]
+[![Alipay](https://img.shields.io/badge/-Tip%20Me%20on%20Alipay-blue?logo=alipay&logoColor=white)][cn-donation]
+
+## License
+
+This work is published under [MIT](https://github.com/cotes2020/jekyll-theme-chirpy/blob/master/LICENSE) License.
+
+<!-- ReadMe links -->
+
+[jb]: https://www.jetbrains.com/?from=jekyll-theme-chirpy
+[cn-donation]: https://sponsor.cotes.page/
