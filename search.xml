@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>LLDB详解</title>
+    <url>/2022/12/08/LLDB%E8%AF%A6%E8%A7%A3/</url>
+    <content><![CDATA[<h1 id="LLDB详解"><a href="#LLDB详解" class="headerlink" title="LLDB详解"></a>LLDB详解</h1><p>正在编写中，敬请期待</p>
+<p>这是一个图片<img src="/2022/12/08/LLDB%E8%AF%A6%E8%A7%A3/aimg.png" class="" title="This is an image">个图片<br><img src="/aimg.png" alt="图片1"></p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">UIView</span> *videoInfoShowView;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">UIView</span> *verticalView;               <span class="comment">// 分隔线</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) BBASearchShortVideoBottomView *bottomInteractionView; <span class="comment">// 底部点赞、分享、评论栏</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">UIImageView</span> *hejiIcon;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) BBAEdgeInsetLabel *videoTitleLabel;</span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">strong</span>) <span class="built_in">UIView</span> *videoTitleBgView;</span><br></pre></td></tr></table></figure>]]></content>
+  </entry>
+</search>
