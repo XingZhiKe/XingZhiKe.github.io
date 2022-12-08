@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha256-Z1K5uhUaJXA7Ll0XrZ/0JhX4lAtZFpT6jkKrEDT0drU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.14.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"mac"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="一、锲子最近在学习Swift过程中发现，Swift有不少高阶函数，这些函数为Swift支持函数式编程范式提供了强有力的支持。这些函数主要包括：map、filter、flatMap、compactMap、reduce等。本文对这些函数进行解析，与网络上的其他文章相比，本文有两大特色：  针对这些函数原型进行说明（如果不了解泛型，看到这些函数原型时，可能一脸懵逼；理解了这些原型，就更加理解函数本身）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Swift高阶函数解析">
+<meta property="og:url" content="http://example.com/2022/12/09/Swift%E9%AB%98%E9%98%B6%E5%87%BD%E6%95%B0%E8%A7%A3%E6%9E%90/index.html">
+<meta property="og:site_name" content="OnTheWay">
+<meta property="og:description" content="一、锲子最近在学习Swift过程中发现，Swift有不少高阶函数，这些函数为Swift支持函数式编程范式提供了强有力的支持。这些函数主要包括：map、filter、flatMap、compactMap、reduce等。本文对这些函数进行解析，与网络上的其他文章相比，本文有两大特色：  针对这些函数原型进行说明（如果不了解泛型，看到这些函数原型时，可能一脸懵逼；理解了这些原型，就更加理解函数本身）">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-12-08T23:53:31.000Z">
+<meta property="article:modified_time" content="2022-12-08T23:58:19.089Z">
+<meta property="article:author" content="ontheway">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://example.com/2022/12/09/Swift%E9%AB%98%E9%98%B6%E5%87%BD%E6%95%B0%E8%A7%A3%E6%9E%90/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2022/12/09/Swift%E9%AB%98%E9%98%B6%E5%87%BD%E6%95%B0%E8%A7%A3%E6%9E%90/","path":"2022/12/09/Swift高阶函数解析/","title":"Swift高阶函数解析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Swift高阶函数解析 | OnTheWay</title>
+  
+
+
+
+
+
+
+  <script async defer data-website-id="" src=""></script>
+
+  <script defer data-domain="" src=""></script>
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">OnTheWay</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-关于"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li><li class="menu-item menu-item-标签"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-分类"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-归档"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E9%94%B2%E5%AD%90"><span class="nav-number">1.</span> <span class="nav-text">一、锲子</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E9%AB%98%E9%98%B6%E5%87%BD%E6%95%B0%E8%A7%A3%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">二、高阶函数解析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-map"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 map</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-compactMap"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 compactMap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-flatMap"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 flatMap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-filter"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 filter</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-5-reduce"><span class="nav-number">2.5.</span> <span class="nav-text">2.5 reduce</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-1-%E7%AC%AC%E4%B8%80%E7%A7%8Dreduce"><span class="nav-number">2.5.1.</span> <span class="nav-text">2.5.1 第一种reduce</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-2-%E7%AC%AC%E4%BA%8C%E7%A7%8Dreduce"><span class="nav-number">2.5.2.</span> <span class="nav-text">2.5.2 第二种reduce</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BB%A5reduce%E5%AE%9E%E7%8E%B0%E5%85%B6%E4%BB%96%E9%AB%98%E9%98%B6%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">三、以reduce实现其他高阶函数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-reduce%E5%AE%9E%E7%8E%B0map"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 reduce实现map</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-reduce%E5%AE%9E%E7%8E%B0compactMap"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 reduce实现compactMap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-reduce%E5%AE%9E%E7%8E%B0flatMap"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 reduce实现flatMap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-reduce%E5%AE%9E%E7%8E%B0filter"><span class="nav-number">3.4.</span> <span class="nav-text">3.3 reduce实现filter</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9B%E3%80%81reduce%E7%9A%84%E5%A6%99%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">四、reduce的妙用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1-%E6%A0%B9%E6%8D%AE%E8%80%83%E5%88%86%E8%BF%9B%E8%A1%8C%E5%88%86%E7%BA%A7"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 根据考分进行分级</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-2-%E8%8E%B7%E5%BE%97%E4%BC%98%E7%AD%89%E7%94%9F%E7%9A%84%E4%BA%BA%E6%95%B0%E5%92%8C%E5%B9%B3%E5%9D%87%E5%88%86"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 获得优等生的人数和平均分</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%94%E3%80%81lazy"><span class="nav-number">5.</span> <span class="nav-text">五、lazy</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-lazy%E7%A4%BA%E4%BE%8B"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 lazy示例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-2-lazy%E6%80%BB%E7%BB%93"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 lazy总结</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%BD%AC%E5%8F%98%E6%80%9D%E6%83%B3"><span class="nav-number">6.</span> <span class="nav-text">六、转变思想</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ontheway"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">ontheway</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/XingZhiKe" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;XingZhiKe" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wwj_5_209@163.com" title="E-Mail → mailto:wwj_5_209@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/12/09/Swift%E9%AB%98%E9%98%B6%E5%87%BD%E6%95%B0%E8%A7%A3%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="ontheway">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="OnTheWay">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Swift高阶函数解析 | OnTheWay">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Swift高阶函数解析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2022-12-09 07:53:31 / Modified: 07:58:19" itemprop="dateCreated datePublished" datetime="2022-12-09T07:53:31+08:00">2022-12-09</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="一、锲子"><a href="#一、锲子" class="headerlink" title="一、锲子"></a>一、锲子</h1><p>最近在学习Swift过程中发现，Swift有不少高阶函数，这些函数为Swift支持函数式编程范式提供了强有力的支持。这些函数主要包括：map、filter、flatMap、compactMap、reduce等。<br>本文对这些函数进行解析，与网络上的其他文章相比，本文有两大特色：</p>
+<ul>
+<li>针对这些函数原型进行说明（如果不了解泛型，看到这些函数原型时，可能一脸懵逼；理解了这些原型，就更加理解函数本身）</li>
+<li>reduce方法是很强大的，本文使用reduce方法重新实现其他的高阶函数</li>
+<li>包含关于lazy用法的说明（非常规的属性lazy用法）</li>
+</ul>
+<blockquote>
+<p>注意<br>本文的函数介绍以Array的为例，其他的十分类似。</p>
+</blockquote>
+<span id="more"></span>
+
+<h1 id="二、高阶函数解析"><a href="#二、高阶函数解析" class="headerlink" title="二、高阶函数解析"></a>二、高阶函数解析</h1><h2 id="2-1-map"><a href="#2-1-map" class="headerlink" title="2.1 map"></a>2.1 map</h2><ul>
+<li>作用<br>如果用一句话来概括map的作用，那么就是：以序列的每个元素为实参来调用用户提供的转换方法来获取一个新的结果，并用这个结果构成一个新的序列</li>
+<li>函数原型<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@inlinable</span> <span class="keyword">public</span> <span class="keyword">func</span> <span class="title function_">map</span>&lt;<span class="type">T</span>&gt;(<span class="keyword">_</span> <span class="params">transform</span>: (<span class="type">Element</span>) <span class="keyword">throws</span> -&gt; <span class="type">T</span>) <span class="keyword">rethrows</span> -&gt; [<span class="type">T</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// @inlinable 这是在SE-0193中说明的属性，用于告知编译器可以为泛型的具体类型替换生成内联代码，至于是否最终内联，是由编译器决定的</span></span><br><span class="line"><span class="comment">// public 可以被其他模块看到该方法</span></span><br><span class="line"><span class="comment">// func 声明一个函数的关键字</span></span><br><span class="line"><span class="comment">// map 函数名</span></span><br><span class="line"><span class="comment">// &lt;T&gt; 这是泛型函数声明泛型类型占位符的方式，在显式、隐式特化时，会被替换为具体的类型</span></span><br><span class="line"><span class="comment">// _ 标识函数参数的外部参数名被忽略</span></span><br><span class="line"><span class="comment">// transform 是一个参数名</span></span><br><span class="line"><span class="comment">// (Element) throws -&gt; T 这里标识transform的类型，该类型是一个函数，该函数有一个形参（形参的类型是序列的类型，Element），该函数可能抛出错误（throws），该函数的返回值是T</span></span><br><span class="line"><span class="comment">// rethrows 标识，如果用户提供的错误抛出异常，则会再次抛出给用户</span></span><br><span class="line"><span class="comment">// [T]标识最后返回的是一个数组，数组的类型是T</span></span><br></pre></td></tr></table></figure></li>
+<li>示例<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这是一个很普通的例子，仅用于说明map的最基础功能</span></span><br><span class="line"><span class="keyword">let</span> arrInt <span class="operator">=</span> [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line"><span class="keyword">let</span> arrNew <span class="operator">=</span> arrInt.map &#123; (aElement) -&gt; <span class="type">String</span> <span class="keyword">in</span></span><br><span class="line">    <span class="type">String</span>(aElement)</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">print</span>(arrNew) <span class="comment">// [&quot;0&quot;, &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;]</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 此示例用于说明在可能碰到nil值时的处理方式</span></span><br><span class="line"><span class="keyword">let</span> arrString <span class="operator">=</span> [<span class="string">&quot;0&quot;</span>, <span class="string">&quot;1&quot;</span>, <span class="string">&quot;2&quot;</span>, <span class="string">&quot;3&quot;</span>, <span class="string">&quot;4&quot;</span>, <span class="string">&quot;wwj&quot;</span>]</span><br><span class="line"><span class="keyword">let</span> arrNew <span class="operator">=</span> arrString.map &#123; (aElement) -&gt; <span class="type">Int</span>? <span class="keyword">in</span></span><br><span class="line">    <span class="type">Int</span>(aElement)</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">print</span>(arrNew) <span class="comment">//[Optional(0), Optional(1), Optional(2), Optional(3), Optional(4), nil]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 由于&quot;wwj&quot;无法转换为数字，所以笔者提供的转换方法返回了一个Int？</span></span><br><span class="line"><span class="comment">// 这导致最终的arrNew的元素类型是Int?</span></span><br><span class="line"><span class="comment">// 这在某些情况下不方便，所以就请我们看看compactMap是如何处理可选值的</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="2-2-compactMap"><a href="#2-2-compactMap" class="headerlink" title="2.2 compactMap"></a>2.2 compactMap</h2><ul>
+<li>作用<br>compactMap的作用于map类似，差别是针对nil值的处理方式不同，compactMap把nil从最终结果过滤出去。</li>
+<li>函数原型<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@inlinable</span> <span class="keyword">public</span> <span class="keyword">func</span> <span class="title function_">compactMap</span>&lt;<span class="type">ElementOfResult</span>&gt;(<span class="keyword">_</span> <span class="params">transform</span>: (<span class="type">Element</span>) <span class="keyword">throws</span> -&gt; <span class="type">ElementOfResult</span>?) <span class="keyword">rethrows</span> -&gt; [<span class="type">ElementOfResult</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 此函数原型没有新的内容，所以不再做介绍</span></span><br></pre></td></tr></table></figure></li>
+<li>示例<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arrString <span class="operator">=</span> [<span class="string">&quot;0&quot;</span>, <span class="string">&quot;1&quot;</span>, <span class="string">&quot;2&quot;</span>, <span class="string">&quot;3&quot;</span>, <span class="string">&quot;4&quot;</span>, <span class="string">&quot;wwj&quot;</span>]</span><br><span class="line"><span class="keyword">let</span> arrNew <span class="operator">=</span> arrString.compactMap &#123; (aElement) -&gt; <span class="type">Int</span>? <span class="keyword">in</span></span><br><span class="line">    <span class="type">Int</span>(aElement)</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">print</span>(arrNew) <span class="comment">// [0, 1, 2, 3, 4]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 可以看出，最终结果arrNew元素的类型是Int，且不包含nil</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 以上方法可以替换为下面的方法</span></span><br><span class="line"><span class="comment">// 差别在笔者提供的类型转换方法当中</span></span><br><span class="line"><span class="comment">// 如果对这里不懂或者想了解更多内容请参阅笔者的《Chapter 2.Functions》</span></span><br><span class="line"><span class="keyword">let</span> arrString <span class="operator">=</span> [<span class="string">&quot;0&quot;</span>, <span class="string">&quot;1&quot;</span>, <span class="string">&quot;2&quot;</span>, <span class="string">&quot;3&quot;</span>, <span class="string">&quot;4&quot;</span>, <span class="string">&quot;wwj&quot;</span>]</span><br><span class="line"><span class="keyword">let</span> arrNew <span class="operator">=</span> arrString.compactMap &#123;<span class="type">Int</span>(<span class="variable">$0</span>)&#125;</span><br><span class="line"><span class="built_in">print</span>(arrNew) <span class="comment">// [0, 1, 2, 3, 4]</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="2-3-flatMap"><a href="#2-3-flatMap" class="headerlink" title="2.3 flatMap"></a>2.3 flatMap</h2><ul>
+<li>作用<br>flatMap的作用于map类似，差别是此处用户提供的转换方法返回值是一个数组、最终返回的数组是把用户返回的数组拉平了。</li>
+<li>函数原型<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@inlinable</span> <span class="keyword">public</span> <span class="keyword">func</span> <span class="title function_">flatMap</span>&lt;<span class="type">SegmentOfResult</span>&gt;(<span class="keyword">_</span> <span class="params">transform</span>: (<span class="type">Element</span>) <span class="keyword">throws</span> -&gt; <span class="type">SegmentOfResult</span>) <span class="keyword">rethrows</span> -&gt; [<span class="type">SegmentOfResult</span>.<span class="type">Element</span>] <span class="keyword">where</span> <span class="type">SegmentOfResult</span> : <span class="type">Sequence</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 这里只针对与map原型相比，不同的地方进行介绍</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// [SegmentOfResult.Element] 与map相比，此处返回的是数组</span></span><br><span class="line"><span class="comment">// where 在此处是对泛型的类型进行约束</span></span><br><span class="line"><span class="comment">// SegmentOfResult : Sequence 返回值的类型占位符是SegmentOfResult，此处要求返回数组的元素类型必须符合Sequence协议</span></span><br></pre></td></tr></table></figure></li>
+<li>示例<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arrString <span class="operator">=</span> [<span class="string">&quot;0&quot;</span>, <span class="string">&quot;12&quot;</span>, <span class="string">&quot;32&quot;</span>, <span class="string">&quot;34&quot;</span>, <span class="string">&quot;54&quot;</span>, <span class="string">&quot;wwj&quot;</span>]</span><br><span class="line"><span class="keyword">let</span> arrNew <span class="operator">=</span> arrString.flatMap &#123; (aElement) -&gt; [<span class="type">Character</span>] <span class="keyword">in</span></span><br><span class="line">    aElement.shuffled()</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">print</span>(arrNew) <span class="comment">// [&quot;0&quot;, &quot;2&quot;, &quot;1&quot;, &quot;3&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;4&quot;, &quot;5&quot;, &quot;w&quot;, &quot;w&quot;, &quot;j&quot;]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 字符串其实也是符合序列协议的类型</span></span><br><span class="line"><span class="comment">// 字符串这种序列的元素类型是Character</span></span><br><span class="line"><span class="comment">// shuffled 方法是把组成字符串的字符打乱顺序后以数组的形式返回所有的字符</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="2-4-filter"><a href="#2-4-filter" class="headerlink" title="2.4 filter"></a>2.4 filter</h2><ul>
+<li>作用<br>flatMap的作用于map类似，差别是用户提供的函数作为一个过滤网，通过网的元素组成新的数组，并返回该数组。</li>
+<li>函数原型<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@inlinable</span> <span class="keyword">public</span> <span class="keyword">func</span> <span class="title function_">filter</span>(<span class="keyword">_</span> <span class="params">isIncluded</span>: (<span class="type">String</span>) <span class="keyword">throws</span> -&gt; <span class="type">Bool</span>) <span class="keyword">rethrows</span> -&gt; [<span class="type">String</span>]</span><br><span class="line"><span class="comment">// 此原型没有新内容，故不作解释</span></span><br></pre></td></tr></table></figure></li>
+<li>示例<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arrString <span class="operator">=</span> [<span class="string">&quot;0&quot;</span>, <span class="string">&quot;12&quot;</span>, <span class="string">&quot;32&quot;</span>, <span class="string">&quot;34&quot;</span>, <span class="string">&quot;54&quot;</span>, <span class="string">&quot;wwj&quot;</span>]</span><br><span class="line"><span class="keyword">let</span> arrNew <span class="operator">=</span> arrString.filter &#123; (aElement) -&gt; <span class="type">Bool</span> <span class="keyword">in</span></span><br><span class="line">    aElement.contains(<span class="string">&quot;2&quot;</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(arrNew) <span class="comment">// [&quot;12&quot;, &quot;32&quot;]</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="2-5-reduce"><a href="#2-5-reduce" class="headerlink" title="2.5 reduce"></a>2.5 reduce</h2><p>reduce是一个重载函数，其具有两种类型，下面分别做介绍。</p>
+<h3 id="2-5-1-第一种reduce"><a href="#2-5-1-第一种reduce" class="headerlink" title="2.5.1 第一种reduce"></a>2.5.1 第一种reduce</h3><ul>
+<li>作用<br>使用用户提供的函数对序列的元素进行结合。如果是第一次看到的话，不好理解，一会看代码就理解了。</li>
+<li>函数原型<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@inlinable</span> <span class="keyword">public</span> <span class="keyword">func</span> <span class="title function_">reduce</span>&lt;<span class="type">Result</span>&gt;(<span class="keyword">_</span> <span class="params">initialResult</span>: <span class="type">Result</span>, <span class="keyword">_</span> <span class="params">nextPartialResult</span>: (<span class="type">Result</span>, <span class="type">Element</span>) <span class="keyword">throws</span> -&gt; <span class="type">Result</span>) <span class="keyword">rethrows</span> -&gt; <span class="type">Result</span></span><br><span class="line"><span class="comment">// 此原型没有新内容，故不作解释</span></span><br></pre></td></tr></table></figure></li>
+<li>示例<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arrString <span class="operator">=</span> [<span class="string">&quot;0&quot;</span>, <span class="string">&quot;12&quot;</span>, <span class="string">&quot;32&quot;</span>, <span class="string">&quot;34&quot;</span>, <span class="string">&quot;54&quot;</span>, <span class="string">&quot;wwj&quot;</span>]</span><br><span class="line"><span class="keyword">let</span> arrNew <span class="operator">=</span> arrString.reduce(<span class="string">&quot;&quot;</span>) &#123; (acc, aElement) -&gt; <span class="type">String</span> <span class="keyword">in</span></span><br><span class="line">    <span class="keyword">return</span> acc <span class="operator">+</span> aElement</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">print</span>(arrNew) <span class="comment">// 012323454wwj</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 这个例子简单说明了reduce的用法，很多介绍的文章也只说到这里</span></span><br><span class="line"><span class="comment">// 此函数的计算过程是这样子的</span></span><br><span class="line"><span class="comment">// 使用初始值，作为实参调用用户的函数，此时得到一个返回值</span></span><br><span class="line"><span class="comment">// 然后以新的返回值作为实参，再次调用用户的函数</span></span><br><span class="line"><span class="comment">// 重复上面步骤，指导序列结束</span></span><br><span class="line"><span class="comment">// 把用户函数最后一次调用的返回值，作为reduce的返回值，返回给用户</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="2-5-2-第二种reduce"><a href="#2-5-2-第二种reduce" class="headerlink" title="2.5.2 第二种reduce"></a>2.5.2 第二种reduce</h3><ul>
+<li>作用<br>使用用户提供的函数对序列的元素进行结合。如果是第一次看到的话，不好理解，一会看代码就理解了。</li>
+<li>函数原型<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">@inlinable</span> <span class="keyword">public</span> <span class="keyword">func</span> <span class="title function_">reduce</span>&lt;<span class="type">Result</span>&gt;(<span class="params">into</span> <span class="params">initialResult</span>: <span class="type">Result</span>, <span class="keyword">_</span> <span class="params">updateAccumulatingResult</span>: (<span class="keyword">inout</span> <span class="type">Result</span>, <span class="type">Element</span>) <span class="keyword">throws</span> -&gt; ()) <span class="keyword">rethrows</span> -&gt; <span class="type">Result</span></span><br><span class="line"><span class="comment">// inout 这里的Result的类型是一个可改变的类型，这很重要</span></span><br></pre></td></tr></table></figure></li>
+<li>示例<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arrString <span class="operator">=</span> [<span class="string">&quot;0&quot;</span>, <span class="string">&quot;12&quot;</span>, <span class="string">&quot;32&quot;</span>, <span class="string">&quot;34&quot;</span>, <span class="string">&quot;54&quot;</span>, <span class="string">&quot;wwj&quot;</span>]</span><br><span class="line"><span class="keyword">let</span> strNew <span class="operator">=</span> arrString.reduce(into: <span class="string">&quot;&quot;</span>) &#123; (acc, aElement) <span class="keyword">in</span></span><br><span class="line">    acc.append(aElement) <span class="comment">// （1）请注意这里</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">print</span>(strNew) <span class="comment">// 012323454wwj</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 这个方法的返回值与上面一个相同，但是请注意（1）这一行，他是通过修改acc来实现的，也就是说acc是一个输入输出参数</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="三、以reduce实现其他高阶函数"><a href="#三、以reduce实现其他高阶函数" class="headerlink" title="三、以reduce实现其他高阶函数"></a>三、以reduce实现其他高阶函数</h1><p>大部分网文在讲述的时候，都只涉及以上内容，但不包括第二种reduce函数。其实，其作用非常强大，下面我们就用其来实现其他几个高阶函数。</p>
+<h2 id="3-1-reduce实现map"><a href="#3-1-reduce实现map" class="headerlink" title="3.1 reduce实现map"></a>3.1 reduce实现map</h2><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arrInt <span class="operator">=</span> [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line"><span class="keyword">let</span> arrNew <span class="operator">=</span> arrInt.reduce(into: [<span class="type">String</span>]()) &#123; (acc, aElement) <span class="keyword">in</span></span><br><span class="line">    acc.append(<span class="type">String</span>(aElement))</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">print</span>(arrNew) <span class="comment">// [&quot;0&quot;, &quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;]</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h2 id="3-2-reduce实现compactMap"><a href="#3-2-reduce实现compactMap" class="headerlink" title="3.2 reduce实现compactMap"></a>3.2 reduce实现compactMap</h2><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arrString <span class="operator">=</span> [<span class="string">&quot;0&quot;</span>, <span class="string">&quot;1&quot;</span>, <span class="string">&quot;2&quot;</span>, <span class="string">&quot;3&quot;</span>, <span class="string">&quot;4&quot;</span>, <span class="string">&quot;wwj&quot;</span>]</span><br><span class="line"><span class="keyword">let</span> arrNew <span class="operator">=</span> arrString.reduce(into: [<span class="type">Int</span>]()) &#123; (acc, aElement) <span class="keyword">in</span></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> aStr <span class="operator">=</span> <span class="type">Int</span>(aElement) &#123;</span><br><span class="line">        acc.append(aStr)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">print</span>(arrNew) <span class="comment">// [0, 1, 2, 3, 4]</span></span><br></pre></td></tr></table></figure>
+<h2 id="3-3-reduce实现flatMap"><a href="#3-3-reduce实现flatMap" class="headerlink" title="3.3 reduce实现flatMap"></a>3.3 reduce实现flatMap</h2><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arrString <span class="operator">=</span> [<span class="string">&quot;0&quot;</span>, <span class="string">&quot;12&quot;</span>, <span class="string">&quot;32&quot;</span>, <span class="string">&quot;34&quot;</span>, <span class="string">&quot;54&quot;</span>, <span class="string">&quot;wwj&quot;</span>]</span><br><span class="line"><span class="keyword">let</span> arrNew <span class="operator">=</span> arrString.reduce(into: [<span class="type">Character</span>](), &#123; (acc, aElement) <span class="keyword">in</span></span><br><span class="line">    acc.append(contentsOf: aElement.shuffled())</span><br><span class="line">&#125;)</span><br><span class="line">    </span><br><span class="line"><span class="built_in">print</span>(arrNew) <span class="comment">// [&quot;0&quot;, &quot;2&quot;, &quot;1&quot;, &quot;3&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;4&quot;, &quot;5&quot;, &quot;w&quot;, &quot;w&quot;, &quot;j&quot;]</span></span><br></pre></td></tr></table></figure>
+<h2 id="3-3-reduce实现filter"><a href="#3-3-reduce实现filter" class="headerlink" title="3.3 reduce实现filter"></a>3.3 reduce实现filter</h2><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arrString <span class="operator">=</span> [<span class="string">&quot;0&quot;</span>, <span class="string">&quot;12&quot;</span>, <span class="string">&quot;32&quot;</span>, <span class="string">&quot;34&quot;</span>, <span class="string">&quot;54&quot;</span>, <span class="string">&quot;wwj&quot;</span>]</span><br><span class="line"><span class="keyword">let</span> arrNew <span class="operator">=</span> arrString.reduce(into: [<span class="type">String</span>]()) &#123; (acc, aElement) <span class="keyword">in</span></span><br><span class="line">    <span class="keyword">if</span> aElement.contains(<span class="string">&quot;2&quot;</span>) &#123;</span><br><span class="line">        acc.append(aElement)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(arrNew) <span class="comment">// [&quot;12&quot;, &quot;32&quot;]</span></span><br></pre></td></tr></table></figure>
+<h1 id="四、reduce的妙用"><a href="#四、reduce的妙用" class="headerlink" title="四、reduce的妙用"></a>四、reduce的妙用</h1><p>通过第三节，可以看出来，reduce十分强大，可以实现其他高阶函数。其实，reduce的强大超过你的想象。一些看起来不可能用reduce实现的功能，都可以用reduce实现。下面，我们看一些示例。</p>
+<h2 id="4-1-根据考分进行分级"><a href="#4-1-根据考分进行分级" class="headerlink" title="4.1 根据考分进行分级"></a>4.1 根据考分进行分级</h2><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Student</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> name: <span class="type">String</span></span><br><span class="line">    <span class="keyword">let</span> scroeTotale: <span class="type">Int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> allStudent <span class="operator">=</span> [</span><br><span class="line">    <span class="type">Student</span>(name: <span class="string">&quot;wwj&quot;</span>, scroeTotale: <span class="number">12</span>),</span><br><span class="line">    <span class="type">Student</span>(name: <span class="string">&quot;wzy&quot;</span>, scroeTotale: <span class="number">21</span>),</span><br><span class="line">    <span class="type">Student</span>(name: <span class="string">&quot;sll&quot;</span>, scroeTotale: <span class="number">19</span>),</span><br><span class="line">    <span class="type">Student</span>(name: <span class="string">&quot;sr&quot;</span>, scroeTotale: <span class="number">1</span>),</span><br><span class="line">    <span class="type">Student</span>(name: <span class="string">&quot;sxx&quot;</span>, scroeTotale: <span class="operator">-</span><span class="number">1</span>)</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> studentGrade <span class="operator">=</span> allStudent.reduce(into: [String: [<span class="type">Student</span>]]()) &#123; ( acc, aStudent) <span class="keyword">in</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> grade: <span class="type">String</span></span><br><span class="line">    <span class="keyword">switch</span> aStudent.scroeTotale &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="operator">...</span><span class="number">0</span>:</span><br><span class="line">        grade <span class="operator">=</span> <span class="string">&quot;差等生&quot;</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">1</span><span class="operator">...</span><span class="number">10</span>:</span><br><span class="line">        grade <span class="operator">=</span> <span class="string">&quot;低等生&quot;</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">11</span><span class="operator">...</span><span class="number">20</span>:</span><br><span class="line">        grade <span class="operator">=</span> <span class="string">&quot;中等生&quot;</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">21</span><span class="operator">...</span>:</span><br><span class="line">        grade <span class="operator">=</span> <span class="string">&quot;优等生&quot;</span></span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        grade <span class="operator">=</span> <span class="string">&quot;编译器导致此处必须包含default子句，不然会报错误：switch是不完整的&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">let</span> <span class="keyword">_</span> <span class="operator">=</span> acc[grade] &#123;</span><br><span class="line">        acc[grade]<span class="operator">?</span>.append(aStudent)</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        acc[grade] <span class="operator">=</span> [aStudent]</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">[&quot;低等生&quot;: [myLearnSwift.Student(name: &quot;sr&quot;, scroeTotale: 1)], </span></span><br><span class="line"><span class="comment">&quot;优等生&quot;: [myLearnSwift.Student(name: &quot;wzy&quot;, scroeTotale: 21)],</span></span><br><span class="line"><span class="comment">&quot;差等生&quot;: [myLearnSwift.Student(name: &quot;sxx&quot;, scroeTotale: -1)],</span></span><br><span class="line"><span class="comment">&quot;中等生&quot;: [myLearnSwift.Student(name: &quot;wwj&quot;, scroeTotale: 12), myLearnSwift.Student(name: &quot;sll&quot;, scroeTotale: 19)]]</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<h2 id="4-2-获得优等生的人数和平均分"><a href="#4-2-获得优等生的人数和平均分" class="headerlink" title="4.2 获得优等生的人数和平均分"></a>4.2 获得优等生的人数和平均分</h2><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Student</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> name: <span class="type">String</span></span><br><span class="line">    <span class="keyword">let</span> scroeTotale: <span class="type">Int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> allStudent <span class="operator">=</span> [</span><br><span class="line">    <span class="type">Student</span>(name: <span class="string">&quot;wwj&quot;</span>, scroeTotale: <span class="number">12</span>),</span><br><span class="line">    <span class="type">Student</span>(name: <span class="string">&quot;wzy&quot;</span>, scroeTotale: <span class="number">21</span>),</span><br><span class="line">    <span class="type">Student</span>(name: <span class="string">&quot;sll&quot;</span>, scroeTotale: <span class="number">19</span>),</span><br><span class="line">    <span class="type">Student</span>(name: <span class="string">&quot;sr&quot;</span>, scroeTotale: <span class="number">1</span>),</span><br><span class="line">    <span class="type">Student</span>(name: <span class="string">&quot;sxx&quot;</span>, scroeTotale: <span class="operator">-</span><span class="number">1</span>)</span><br><span class="line">]</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> studentGrade <span class="operator">=</span> allStudent.reduce(into: (number: <span class="number">0</span>, average: <span class="number">0</span>)) &#123; ( acc, aStudent) <span class="keyword">in</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> aStudent.scroeTotale <span class="operator">&gt;</span> <span class="number">10</span> &#123;</span><br><span class="line">        acc.average <span class="operator">=</span> (acc.number <span class="operator">*</span> acc.average <span class="operator">+</span> aStudent.scroeTotale) <span class="operator">/</span> (acc.number <span class="operator">+</span> <span class="number">1</span>)</span><br><span class="line">        acc.number <span class="operator">+=</span> <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(studentGrade) <span class="comment">// (number: 3, average: 17)</span></span><br></pre></td></tr></table></figure>
+<h1 id="五、lazy"><a href="#五、lazy" class="headerlink" title="五、lazy"></a>五、lazy</h1><h2 id="5-1-lazy示例"><a href="#5-1-lazy示例" class="headerlink" title="5.1 lazy示例"></a>5.1 lazy示例</h2><p>常规的lazy一般用来标识某属性，该属性在真正用到的时候才会被构建，而不是其所属对象生成时就需要构造。通过lazy关键字，最主要的是提升了性能。除此之外，在以上的高阶方法中也可以使用lazy。高阶函数的lazy作用与之前提到的相同，主要是为了提高性能。下面就让我们看看lazy的具体用法吧。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> arrInt <span class="operator">=</span> [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>]</span><br><span class="line"><span class="keyword">let</span> arrString <span class="operator">=</span> arrInt.map &#123; (aElement) -&gt; <span class="type">String</span> <span class="keyword">in</span></span><br><span class="line">    <span class="built_in">print</span>(aElement)</span><br><span class="line">    <span class="keyword">return</span> <span class="type">String</span>(aElement)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">输出结果是：</span></span><br><span class="line"><span class="comment">1</span></span><br><span class="line"><span class="comment">2</span></span><br><span class="line"><span class="comment">3</span></span><br><span class="line"><span class="comment">4</span></span><br><span class="line"><span class="comment">5</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 通过以上map的示例，可以看出，map一定会执行</span></span><br><span class="line"><span class="comment">// 但是，存在一些情况：此时你不想、不能、不愿，立刻、马上获得新的数据</span></span><br><span class="line"><span class="comment">// 获取map方法过于耗费性能、或许是因为没有必要对所有元素执行map等等原因</span></span><br><span class="line"><span class="comment">// 针对此问题，可以通过lazy来解决</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> arrInt <span class="operator">=</span> [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>]</span><br><span class="line"><span class="keyword">let</span> arrString <span class="operator">=</span> arrInt.lazy.map &#123; (aElement) -&gt; <span class="type">String</span> <span class="keyword">in</span></span><br><span class="line">    <span class="built_in">print</span>(aElement)</span><br><span class="line">    <span class="keyword">return</span> <span class="type">String</span>(aElement)</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 执行以上语句后，没有任何输出，这说明：实际的map闭包没有被执行</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(arrString[<span class="number">0</span>])</span><br><span class="line"><span class="built_in">print</span>(arrString[<span class="number">1</span>])</span><br><span class="line"><span class="built_in">print</span>(arrString[<span class="number">0</span>])</span><br><span class="line"><span class="comment">// 执行以上语句之后，输出内容如下</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">1 map输出</span></span><br><span class="line"><span class="comment">1 print输出</span></span><br><span class="line"><span class="comment">2 map输出</span></span><br><span class="line"><span class="comment">2 print输出</span></span><br><span class="line"><span class="comment">1 map输出</span></span><br><span class="line"><span class="comment">1 print输出</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<h2 id="5-2-lazy总结"><a href="#5-2-lazy总结" class="headerlink" title="5.2 lazy总结"></a>5.2 lazy总结</h2><p>通过以上示例，我们对lazy的用法等内容进行总结：</p>
+<ul>
+<li>用法<ul>
+<li>在容器与高阶函数之间添加lazy</li>
+<li>其他用法不变</li>
+</ul>
+</li>
+<li>注意事项<ul>
+<li>通过lazy属性的引入，高阶函数不是马上被执行</li>
+<li>只有在真正需要的时候map函数才执行（如上例中print(arrString[0])）被调用时</li>
+</ul>
+</li>
+<li>性能问题<ul>
+<li>由于lazy没有缓存以及具体实现问题，所以其性能提升并不明显，有时甚至不如直接使用高阶函数的性能好</li>
+<li>所以只有在原高阶函数确实性能影响较大的时候使用lazy性能才有较大提升</li>
+</ul>
+</li>
+</ul>
+<h1 id="六、转变思想"><a href="#六、转变思想" class="headerlink" title="六、转变思想"></a>六、转变思想</h1><p>由于Swift大大简化了for循环的写法，所以一般看来其与这些高阶函数差别不大。但是，虽然差别不大，这代表这不同的编程范式。我们要勇于接受新的函数式的编程范式，克服命令式编程范式的肌肉记忆。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/12/08/%E9%A2%84%E5%A4%84%E7%90%86-%E5%AE%8F-%E2%80%94%E2%80%94%E6%83%B3%E8%AF%B4%E7%88%B1%E4%BD%A0%E4%B8%8D%E5%AE%B9%E6%98%93/" rel="prev" title="预处理(宏)——想说爱你不容易">
+                  <i class="fa fa-chevron-left"></i> 预处理(宏)——想说爱你不容易
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2022/12/09/%E6%88%91%E5%B0%B1%E7%AB%99%E5%9C%A8%E4%BD%A0%E9%9D%A2%E5%89%8D%EF%BC%8C%E7%9C%8B%E6%88%91%E5%87%A0%E5%88%86%E5%83%8F%E4%BB%8E%E5%89%8D/" rel="next" title="我就站在你面前，看我几分像从前">
+                  我就站在你面前，看我几分像从前 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ontheway</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
