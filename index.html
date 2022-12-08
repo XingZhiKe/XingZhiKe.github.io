@@ -150,7 +150,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">1</span>
+          <span class="site-state-item-count">2</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -176,6 +176,92 @@
     </div>
 
     <div class="main-inner index posts-expand">
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/12/08/%E9%A2%84%E5%A4%84%E7%90%86-%E5%AE%8F-%E2%80%94%E2%80%94%E6%83%B3%E8%AF%B4%E7%88%B1%E4%BD%A0%E4%B8%8D%E5%AE%B9%E6%98%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="ontheway">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="OnTheWay">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="undefined | OnTheWay">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2022/12/08/%E9%A2%84%E5%A4%84%E7%90%86-%E5%AE%8F-%E2%80%94%E2%80%94%E6%83%B3%E8%AF%B4%E7%88%B1%E4%BD%A0%E4%B8%8D%E5%AE%B9%E6%98%93/" class="post-title-link" itemprop="url">预处理(宏)——想说爱你不容易</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2022-12-08 20:38:45 / Modified: 20:43:12" itemprop="dateCreated datePublished" datetime="2022-12-08T20:38:45+08:00">2022-12-08</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="一、工作中遇到的怪事"><a href="#一、工作中遇到的怪事" class="headerlink" title="一、工作中遇到的怪事"></a>一、工作中遇到的怪事</h1><p>在编写代码是，发现了一个崩溃：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// XXXX.m</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">if</span> MOU_GE_HONG_DING_YI == 1</span></span><br><span class="line">        _library = <span class="comment">// 涉密，删除代码；从路径A获取文件</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">        <span class="comment">// 崩溃发生在这里</span></span><br><span class="line">        _library = <span class="comment">// 涉密，删除代码；从路径B获取文件</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+
+<p>但是没有改动到这里，却发生了崩溃！</p>
+<ol>
+<li>经分析，初步判断可能是需要走if分支，但是却走到了else分支</li>
+<li>发现在路径A确实存在文件、而路径B却不存在这个文件</li>
+<li>那么问题就发生在编译XXXX.m文件时，宏MOU_GE_HONG_DING_YI尚未被定义</li>
+</ol>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2022/12/08/%E9%A2%84%E5%A4%84%E7%90%86-%E5%AE%8F-%E2%80%94%E2%80%94%E6%83%B3%E8%AF%B4%E7%88%B1%E4%BD%A0%E4%B8%8D%E5%AE%B9%E6%98%93/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
 
     
 
