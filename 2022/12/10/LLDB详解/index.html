@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha256-Z1K5uhUaJXA7Ll0XrZ/0JhX4lAtZFpT6jkKrEDT0drU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"example.com","root":"/","images":"/images","scheme":"Gemini","darkmode":false,"version":"8.14.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":true,"style":"flat"},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="一、引言作为程序员，日常编写代码的时间远小于调试的时间，所以熟练掌握调试工具能够大幅提高工作效率。本文针对iOS开发过程中通过Xcode使用LLDB进行调试进行的讲解，以有提升自己对此知识的掌握。如果同时能够帮助到广大网友，那么我讲十分开心。 在日常工作中，大部分调试动作都是设置一些断点，在程序被暂停时查看执行逻辑、变量的值等，然后定位问题，并根据具体问题进行修改。这应该是大部分程序员的日常调试行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LLDB详解">
+<meta property="og:url" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="OnTheWay">
+<meta property="og:description" content="一、引言作为程序员，日常编写代码的时间远小于调试的时间，所以熟练掌握调试工具能够大幅提高工作效率。本文针对iOS开发过程中通过Xcode使用LLDB进行调试进行的讲解，以有提升自己对此知识的掌握。如果同时能够帮助到广大网友，那么我讲十分开心。 在日常工作中，大部分调试动作都是设置一些断点，在程序被暂停时查看执行逻辑、变量的值等，然后定位问题，并根据具体问题进行修改。这应该是大部分程序员的日常调试行">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/gui.jpg">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/condition.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/po.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/p.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/v.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/pv-p-v.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/flowcontroller.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/edit-breakpoint.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/rtint.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/rtint2.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/gui-debug.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/ecmd.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/time.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/condition.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/pop.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/wflush.png">
+<meta property="og:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/project-custom.png">
+<meta property="article:published_time" content="2022-12-10T00:11:12.000Z">
+<meta property="article:modified_time" content="2022-12-10T13:35:37.603Z">
+<meta property="article:author" content="ontheway">
+<meta property="article:tag" content="swift">
+<meta property="article:tag" content="OC">
+<meta property="article:tag" content="调试">
+<meta property="article:tag" content="Xcode">
+<meta property="article:tag" content="LLDB">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/gui.jpg">
+
+
+<link rel="canonical" href="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/","path":"2022/12/10/LLDB详解/","title":"LLDB详解"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>LLDB详解 | OnTheWay</title>
+  
+
+
+
+
+
+
+  <script async defer data-website-id="" src=""></script>
+
+  <script defer data-domain="" src=""></script>
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">OnTheWay</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-首页"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-标签"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-分类"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-归档"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-关于"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E5%BC%95%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">一、引言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C%E3%80%81LLDB%E5%91%BD%E4%BB%A4"><span class="nav-number">2.</span> <span class="nav-text">二、LLDB命令</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E5%91%BD%E4%BB%A4%E6%A6%82%E8%BF%B0"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 命令概述</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-1-%E5%91%BD%E4%BB%A4%E5%BD%A2%E5%BC%8F"><span class="nav-number">2.1.1.</span> <span class="nav-text">2.2.1 命令形式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-2-%E5%91%BD%E4%BB%A4%E8%A1%A5%E5%85%A8-Command-Completion"><span class="nav-number">2.1.2.</span> <span class="nav-text">2.2.2 命令补全(Command Completion)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 命令详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-1-%E5%B8%AE%E5%8A%A9%E7%B1%BB%E5%91%BD%E4%BB%A4"><span class="nav-number">2.2.1.</span> <span class="nav-text">2.2.1 帮助类命令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-1-1-help"><span class="nav-number">2.2.1.1.</span> <span class="nav-text">2.2.1.1 help</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-1-2-apropos"><span class="nav-number">2.2.1.2.</span> <span class="nav-text">2.2.1.2 apropos</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-2-expression"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.2.2 expression</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-2-1-po"><span class="nav-number">2.2.2.1.</span> <span class="nav-text">2.2.2.1 po</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-2-2-p"><span class="nav-number">2.2.2.2.</span> <span class="nav-text">2.2.2.2 p</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-2-3-v"><span class="nav-number">2.2.2.3.</span> <span class="nav-text">2.2.2.3 v</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-2-breakpoint"><span class="nav-number">2.2.3.</span> <span class="nav-text">2.2.2 breakpoint</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-3-watchpoint"><span class="nav-number">2.2.4.</span> <span class="nav-text">2.2.3 watchpoint</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-4-thread"><span class="nav-number">2.2.5.</span> <span class="nav-text">2.2.4 thread</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-5-image"><span class="nav-number">2.2.6.</span> <span class="nav-text">2.2.5 image</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BD%BF%E7%94%A8LLDB"><span class="nav-number">3.</span> <span class="nav-text">三、使用LLDB</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-%E4%BF%AE%E6%94%B9%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 修改返回值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-%E8%BE%93%E5%87%BA%E5%B8%83%E5%B1%80%E4%BF%A1%E6%81%AF"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 输出布局信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-%E4%BF%AE%E6%94%B9UI%E5%B9%B6%E5%AE%9E%E6%97%B6%E7%9C%8B%E5%88%B0"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 修改UI并实时看到</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-4-%E6%B3%A8%E6%84%8F%E8%BF%94%E5%9B%9E%E7%B1%BB%E5%9E%8B"><span class="nav-number">3.4.</span> <span class="nav-text">3.4 注意返回类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-5-%E8%B7%B3%E8%BF%87%E6%9F%90%E4%BA%9B%E8%AF%AD%E5%8F%A5"><span class="nav-number">3.5.</span> <span class="nav-text">3.5 跳过某些语句</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-6-%E5%91%BD%E4%BB%A4%E5%90%8E%E6%89%A7%E8%A1%8C"><span class="nav-number">3.6.</span> <span class="nav-text">3.6 命令后执行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-7-%E6%89%A7%E8%A1%8C%E4%B8%80%E6%AC%A1%E7%9A%84%E6%96%AD%E7%82%B9"><span class="nav-number">3.7.</span> <span class="nav-text">3.7 执行一次的断点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-8-%E5%8F%98%E9%87%8F%E4%B8%BA%E7%89%B9%E5%AE%9A%E6%AC%A1%E6%95%B0"><span class="nav-number">3.8.</span> <span class="nav-text">3.8 变量为特定次数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-9-%E5%8F%98%E9%87%8F%E4%B8%BA%E7%89%B9%E5%AE%9A%E7%9A%84%E5%80%BC"><span class="nav-number">3.9.</span> <span class="nav-text">3.9 变量为特定的值</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%89%A9%E5%B1%95LLDB"><span class="nav-number">4.</span> <span class="nav-text">三、扩展LLDB</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-%E5%B7%A5%E7%A8%8B%E7%BA%A7%E6%89%A9%E5%B1%95"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 工程级扩展</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-%E7%B3%BB%E7%BB%9F%E7%BA%A7%E6%89%A9%E5%B1%95"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 系统级扩展</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-%E9%AB%98%E9%98%B6%E6%89%A9%E5%B1%95"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 高阶扩展</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">5.</span> <span class="nav-text">四、参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="ontheway"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">ontheway</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/XingZhiKe" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;XingZhiKe" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:wwj_5_209@163.com" title="E-Mail → mailto:wwj_5_209@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="ontheway">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="OnTheWay">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="LLDB详解 | OnTheWay">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          LLDB详解
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2022-12-10 08:11:12 / Modified: 21:35:37" itemprop="dateCreated datePublished" datetime="2022-12-10T08:11:12+08:00">2022-12-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%9F%BA%E7%A1%80/" itemprop="url" rel="index"><span itemprop="name">基础</span></a>
+        </span>
+          , 
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%9F%BA%E7%A1%80/%E8%B0%83%E8%AF%95/" itemprop="url" rel="index"><span itemprop="name">调试</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="一、引言"><a href="#一、引言" class="headerlink" title="一、引言"></a>一、引言</h1><p>作为程序员，日常编写代码的时间远小于调试的时间，所以熟练掌握调试工具能够大幅提高工作效率。本文针对iOS开发过程中通过Xcode使用LLDB进行调试进行的讲解，以有提升自己对此知识的掌握。如果同时能够帮助到广大网友，那么我讲十分开心。</p>
+<p>在日常工作中，大部分调试动作都是设置一些断点，在程序被暂停时查看执行逻辑、变量的值等，然后定位问题，并根据具体问题进行修改。这应该是大部分程序员的日常调试行为与状态。此种调试行为仅使用LLDB所提供的极少的能力。并且，在大部分情况下，还有不少程序员会借助在源代码里添加NSLog之类的日志代码，来进行辅助调试。虽然以上调试行为是必要的、也解决了不少的问题，但是其十分笨拙与原始，并且效率实在是较低。</p>
+<p>本文将对LLDB的部分不常用功能进行说明，有助于我们掌握这一强大的工具，尽可能的提升工作效率</p>
+<span id="more"></span>
+
+
+
+<h1 id="二、LLDB命令"><a href="#二、LLDB命令" class="headerlink" title="二、LLDB命令"></a>二、LLDB命令</h1><p>LLDB是开源的内置于XCode的具有REPL(read-eval-print-loop)特征的调试器，其提供C++、Python接口。在日常的开发和调试过程中给开发人员带来了非常多的帮助。在Xcode5.0的时候，LLDB全面取代了GDB，使调试工作更加高效、便捷。LLDB是LLVM的一部分。本节重点讲述LLDB的命令，这些命令大部分可以可通过Xcode提的GUI界面来处理，也可以使用Xcode提供的调试控制台以交互命令的方式执行。</p>
+<div style="width:70%;margin:auto"><img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/gui.jpg" class="" title="slug 标题"></div>
+<div style="width:70%;margin:auto"><img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/condition.png" class="" title="修改变量的值 标题"></div>
+
+<h2 id="2-1-命令概述"><a href="#2-1-命令概述" class="headerlink" title="2.1 命令概述"></a>2.1 命令概述</h2><p>LLDB命令的格式格式如下，其中[]表示是可选部分。</p>
+<p><code>&lt;command&gt; [&lt;subcommand&gt; [&lt;subcommand&gt;...]] &lt;action&gt; [-options [option-value]] [argument[argument...]]</code></p>
+<ul>
+<li>command<ul>
+<li>基于LLDB运行环境创建执行命令所需要的上下文环境</li>
+</ul>
+</li>
+<li>subcommand<ul>
+<li>在command创建的上下文环境中进行修改，形成更具体的新的上下文子命令以空格分隔，用于组织相关操作breakpoint和删除breakpoint</li>
+</ul>
+</li>
+<li>action<ul>
+<li>在上下文环境中需要执行的动作</li>
+</ul>
+</li>
+<li>options<ul>
+<li>动作所需要的选项</li>
+<li>一个命令可能包含一个或多个选项 (option) 。选项以空格分隔，以双短划线 (–)开头，组合修改要执行的操作。有些option还提供使用单个短划线 (-) 的简写形式。例如，第一次导致程序停止后自动删除breakpoint的breakpoint set –one-shot命令，可以写为breakpoint set -o。</li>
+<li>有些option还会传递值，option和值用空格分隔。例如，为breakpoint set命令传递–name option，选项值为函数、方法名称，这样就可以为指定函数、方法添加breakpoint。</li>
+<li>有些命令组合使用options。例如，breakpoint set命令组合使用–file和–line选项，并为其指定对应文件名称和行号。</li>
+<li>Option values和arguments中的空格用双引号保护。如果参数中有双引号，则可以使用反斜杠()标志双引号。LLDB等效的使用单引号和双引号。例如：<br><code>（lldb）command [subcommand] -option &quot;some \&quot;quoted\&quot; string&quot;</code><br>也可以写为：<br><code> (lldb) command [subcommand] -option &#39;some &quot;quoted&quot; string&#39;</code><br>这样的命令解析设计有助于LLDB命令语法在所有命令中保持统一。</li>
+<li>如果命令即接受options，又接受自由形式 (free form) 的arguments，则必须在最后一个option和第一个argument间放置以空格分隔的双短划线，如expression命令。这样能够确保以短划线开头的argument被解释为argument，而不会因其与option都以短划线开头而被错误解释。</li>
+</ul>
+</li>
+<li>arguement<ul>
+<li>整个命令所需要参数</li>
+<li>一个命令可能需要一个或多个参数，参数以空格分隔，用于指示要执行的操作。例如，breakpoint disable命令参数传递要禁用的breakpoint。breakpoint disable 1 2表示禁用breakpoint ID为1和2的断点。</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-2-1-命令形式"><a href="#2-2-1-命令形式" class="headerlink" title="2.2.1 命令形式"></a>2.2.1 命令形式</h3><p>相同的命令可以用不同的形式实现<br>例如，以下命令表示同一操作：验证变量someVariable描述，并输出结果。</p>
+<ul>
+<li>规范形式 canonical form：expression –object-description – someVariable。</li>
+<li>缩写形式 abbreviated form：e -O – someVariable。</li>
+<li>别名 alias：po someVariable。可以为任何命令创建别名，以方便执行常见操作。</li>
+</ul>
+<h3 id="2-2-2-命令补全-Command-Completion"><a href="#2-2-2-命令补全-Command-Completion" class="headerlink" title="2.2.2 命令补全(Command Completion)"></a>2.2.2 命令补全(Command Completion)</h3><p>LLDB支持源文件名，符号名，文件名，等等的命令补全(Commmand Completion)。终端窗口中的补全是通过在命令行中输入一个制表符来初始化的。Xcode控制台中的补全与在源码编辑器中的补全方式是一样的：补全会在第三个字符被键入时自动弹出，或者通过Esc键手动取消弹出。</p>
+<p>一个命令中的私有选项可以有不同的完成者(completers)。如breakpoint中的–file <path>选项作为源文件的完成者，–shlib <path>选项作为当前加载的库的完成者，等等。这些行为是特定的，例如，如果指定–shlib <path>，且以–file <path>结尾，则LLDB只会列出由–shlib <path>指定的共享类库。</p>
+<h2 id="2-2-命令详解"><a href="#2-2-命令详解" class="headerlink" title="2.2 命令详解"></a>2.2 命令详解</h2><h3 id="2-2-1-帮助类命令"><a href="#2-2-1-帮助类命令" class="headerlink" title="2.2.1 帮助类命令"></a>2.2.1 帮助类命令</h3><h4 id="2-2-1-1-help"><a href="#2-2-1-1-help" class="headerlink" title="2.2.1.1 help"></a>2.2.1.1 help</h4><p>help命令可以查看LLDB的帮助文档，方便进一步了解LLDB命令结构。<br>只输入help命令，将返回所有命令列表，如下是部分命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Debugger commands:</span><br><span class="line">  apropos           -- List debugger commands related to a word or subject.</span><br><span class="line">  breakpoint        -- Commands for operating on breakpoints (see &#x27;help b&#x27; for</span><br><span class="line">                       shorthand.)</span><br><span class="line">  command           -- Commands for managing custom LLDB commands.</span><br><span class="line">  disassemble       -- Disassemble specified instructions in the current</span><br><span class="line">                       target.  Defaults to the current function for the</span><br><span class="line">                       current thread and stack frame.</span><br><span class="line">  expression        -- Evaluate an expression on the current thread.  Displays</span><br><span class="line">                       any returned value with LLDB&#x27;s default formatting.</span><br><span class="line">  frame             -- Commands for selecting and examing the current thread&#x27;s</span><br><span class="line">                       stack frames.</span><br><span class="line">  gdb-remote        -- Connect to a process via remote GDB server.</span><br><span class="line">                       If no host is specifed, localhost is assumed.</span><br><span class="line">                       gdb-remote is an abbreviation for &#x27;process connect</span><br><span class="line">                       --plugin gdb-remote connect://&lt;hostname&gt;:&lt;port&gt;&#x27;</span><br><span class="line">  gui               -- Switch into the curses based GUI mode.</span><br></pre></td></tr></table></figure>
+<p>可以通过<code>help command</code>来查看命令的具体帮助信息</p>
+<h4 id="2-2-1-2-apropos"><a href="#2-2-1-2-apropos" class="headerlink" title="2.2.1.2 apropos"></a>2.2.1.2 apropos</h4><p>当我们只记得某个单词，但是不太确定属于某个命令、子命令等时，可以通过此命令进行查找</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(lldb) apropos jump</span><br><span class="line">The following commands may relate to &#x27;jump&#x27;:</span><br><span class="line">  _regexp-jump -- Set the program counter to a new address.</span><br><span class="line">  thread jump  -- Sets the program counter to a new address.</span><br><span class="line">  jump         -- Set the program counter to a new address.</span><br></pre></td></tr></table></figure>
+<h3 id="2-2-2-expression"><a href="#2-2-2-expression" class="headerlink" title="2.2.2 expression"></a>2.2.2 expression</h3><p>这个命令可能是我们最常用的命令了，我们经常使用的是po、p，就是它的简写</p>
+<h4 id="2-2-2-1-po"><a href="#2-2-2-1-po" class="headerlink" title="2.2.2.1 po"></a>2.2.2.1 po</h4><p>po命令在当前线程上执行表达式，并输出表达式的计算结果。此命令其实是<code>expression -O  --</code>的简写形式，其中<code>-O</code>实际上是<code>--object-description</code>，此选项表示使用类型提供的描述来输出结果，对于OC语言来说就是descriprtion。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#x27;po&#x27; is an abbreviation for &#x27;expression -O  --&#x27;</span><br><span class="line"></span><br><span class="line">-O ( --object-description )</span><br><span class="line">            Display using a language-specific description API, if possible.</span><br></pre></td></tr></table></figure>
+<p>其使用非常简单，但是其背后的原理比较复杂。</p>
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/po.png" class="" title="po的背后原理">
+
+<h4 id="2-2-2-2-p"><a href="#2-2-2-2-p" class="headerlink" title="2.2.2.2 p"></a>2.2.2.2 p</h4><p>p命令在当前线程上执行表达式，并输出表达式的计算结果，此结果以LLDB内置的格式标识。此命令其实是<code>expression --</code>的简写形式。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#x27;p&#x27; is an abbreviation for &#x27;expression --&#x27;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>其使用非常简单，但是其背后的原理比较复杂。</p>
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/p.png" class="" title="p的背后原理">
+
+<h4 id="2-2-2-3-v"><a href="#2-2-2-3-v" class="headerlink" title="2.2.2.3 v"></a>2.2.2.3 v</h4><p>此命令不属于expression，但是其与po、p作用类似，所以一并在这里介绍。<br>显示当前堆栈帧的变量。<br>默认为所有参数和当前范围内的变量。参数名称、局部名称、静态文件名称和全局文件名称可以指定变量。 可以指定聚合变量的子项例如“var-&gt;child.x”。 ‘frame variable’ 中的 -&gt; 和 [] 运算符不调用运算符重载（如果存在），但直接访问指定的元素。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x27;v&#x27; is an abbreviation for &#x27;frame variable&#x27;</span><br></pre></td></tr></table></figure>
+<p>其使用非常简单，但是其背后的原理比较复杂。</p>
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/v.png" class="" title="p的背后原理">
+
+<p>以下是po、p、v的对比</p>
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/pv-p-v.png" class="" title="对比">
+
+<h3 id="2-2-2-breakpoint"><a href="#2-2-2-breakpoint" class="headerlink" title="2.2.2 breakpoint"></a>2.2.2 breakpoint</h3><p>此命令是与用于设置、取消、修改断点等操作。</p>
+<p>使用breakpoint 的子命令 set 设置断点<br>具体信息可以通过help breakpoint set 查询所有可选的选项(options)以及参数(arguments).</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 按方法名称设置--name(-n):</span><br><span class="line">(lldb) breakpoint set -n greet</span><br><span class="line">Breakpoint 2: where = Greeter`Greeter.Greeter.greet(personNamed: Swift.String) -&gt; () + 127 at Greeter.swift:9:12, address = 0x00000001000034cf</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 按行数设置--line(-l):</span><br><span class="line">(lldb) breakpoint set -l 18</span><br><span class="line">Breakpoint 3: where = Greeter`main + 14 at Greeter.swift:18:15, address = 0x000000010000315e</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">按文件设置--file(-f):</span><br><span class="line">(lldb) breakpoint set -f Greeter.swift -l 20</span><br><span class="line">Breakpoint 6: where = Greeter`main + 34 at Greeter.swift:20:1, address = 0x0000000100003172</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// 根据语言捕获异常--language-exception(-E):</span><br><span class="line">(lldb) breakpoint set -E Objc</span><br><span class="line">Breakpoint 7: no locations (pending).</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">// 可以通过--exception-typename(-O) 指定要捕获的异常类型:</span><br><span class="line">(lldb)  breakpoint set -E Swift -O EnumErrorType</span><br><span class="line">Breakpoint 8: no locations (pending).</span><br><span class="line">// pending，说明某块还没有被加载</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">// 获取断点列表: breakpoint list</span><br><span class="line">(lldb) breakpoint list</span><br><span class="line">Current breakpoints:</span><br><span class="line">1: name = &#x27;sayHello&#x27;, locations = 0 (pending)</span><br><span class="line"></span><br><span class="line">2: name = &#x27;greet&#x27;, locations = 1</span><br><span class="line">  2.1: where = Greeter`Greeter.Greeter.greet(personNamed: Swift.String) -&gt; () + 127 at Greeter.swift:9:12, address = Greeter[0x00000001000034cf], unresolved, hit count = 0</span><br><span class="line"></span><br><span class="line">3: file = &#x27;/Users/jackli/Desktop/Roborock/Greeter.swift&#x27;, line = 18, exact_match = 0, locations = 1</span><br><span class="line">  3.1: where = Greeter`main + 14 at Greeter.swift:18:15, address = Greeter[0x000000010000315e], unresolved, hit count = 0</span><br><span class="line"></span><br><span class="line">4: file = &#x27;main.swift&#x27;, line = 20, exact_match = 0, locations = 0 (pending)</span><br><span class="line"></span><br><span class="line">5: file = &#x27;Greet.swift&#x27;, line = 20, exact_match = 0, locations = 0 (pending)</span><br><span class="line"></span><br><span class="line">6: file = &#x27;Greeter.swift&#x27;, line = 20, exact_match = 0, locations = 1</span><br><span class="line">  6.1: where = Greeter`main + 34 at Greeter.swift:20:1, address = Greeter[0x0000000100003172], unresolved, hit count = 0</span><br><span class="line"></span><br><span class="line">7: Exception breakpoint (catch: off throw: on) the correct runtime exception handler will be determined when you run</span><br><span class="line"></span><br><span class="line">8: Swift Error breakpoint the correct runtime exception handler will be determined when you run</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">需要注意的是: 设置断点其实是设置了逻辑断点, 可能会对应一个或多个位置断点(location).</span><br><span class="line">每个逻辑断点都有一个按照顺序从1开始分配的整型ID. 每一个位置断点又有一个自己的位置ID, 与逻辑断点的ID之间以.分隔, 用于定位位置断点. 示例如下:</span><br><span class="line">2: name = &#x27;greet&#x27;, locations = 1</span><br><span class="line">  2.1: where = Greeter`Greeter.Greeter.greet(personNamed: Swift.String) -&gt; () + 127 at Greeter.swift:9:12, address = Greeter[0x00000001000034cf], unresolved, hit count = 0</span><br><span class="line"></span><br><span class="line">// 逻辑断点是动态的, 如果程序载入了新的代码, 会自动载入新的位置断点.</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// 修改断点:</span><br><span class="line">// breakpoint modify</span><br><span class="line">// 使用这个命令修改逻辑断点或者位置断点, 需要传递逻辑断点或者位置断点的ID 作为参数, 具体参数可以通过help breakpoint modify 查看.</span><br><span class="line"></span><br><span class="line">部分常用选项如下:</span><br><span class="line">--condition(-c) 传入表达式参数, 只有表达式判断为true 才会执行断点.</span><br><span class="line">ignore-count(-i) 指定跳过断点的次数, 在该断点处跳过指定次数后, 才会执行该断点.</span><br><span class="line">--one-shot(-o) 执行断点一次后移除该断点.</span><br><span class="line">--queue-name(-q) 指定队列名称, 该断点只有在指定队列上才会执行.</span><br><span class="line">--thread-name(-T) 指定线程名称, 该断点只有在指定的线程上才会执行.</span><br><span class="line">--thread-id(-t) 指定线程ID(TID), 该断点只有在指定的线程上才会执行.</span><br><span class="line">--thread-index(-x) 指定线程index, 该断点只有在指定的线程上才会执行.</span><br><span class="line"></span><br><span class="line">如下示例修改了断点ID为1的断点, 指定其在执行后,自动移除.</span><br><span class="line">(lldb) breakpoint modify --one-shot 1</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">我们都知道, 当程序抵达断点处时, 程序会暂停执行, 此时可以执行lldb命令.</span><br><span class="line">我们也可以通过执行breakpoint command add 命令, 让程序每次抵达断点处时, 自动执行我们添加的命令. 如:</span><br><span class="line">在位置断点1.1处添加指令, 每行可以添加一个指令, Enter 跳转至下一指令, 输入DONE结束添加.</span><br><span class="line">(lldb) breakpoint command add 1.1</span><br><span class="line">Enter your debugger command(s). Type &#x27;DONE&#x27; to end.</span><br><span class="line">&gt; thread backtrace</span><br><span class="line">&gt; DONE</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">可以将process continue 作为最后一个指令, 那么调试器就会在执行指令后, 自动继续执行程序, 这在记录Log的场景下使用是非常方便的.</span><br><span class="line">(lldb) target create &quot;Greeter&quot;</span><br><span class="line">Current executable set to (x86_64).</span><br><span class="line">(lldb) breakpoint list</span><br><span class="line">No breakpoints currently set.</span><br><span class="line">(lldb) breakpoint set -n greet</span><br><span class="line">Breakpoint 1: where = Greeter`Greeter.Greeter.greet(personNamed: Swift.String) -&gt; () + 127 at Greeter.swift:9:12, address = 0x00000001000034cf</span><br><span class="line">(lldb) breakpoint command add 1</span><br><span class="line">Enter your debugger command(s).  Type &#x27;DONE&#x27; to end.</span><br><span class="line">&gt; frame variable</span><br><span class="line">&gt; process continue</span><br><span class="line">(lldb) process launch</span><br><span class="line">Process 5997 launched: (x86_64)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">设置断点可用状态(Diable/Enable)</span><br><span class="line">禁用断点: breakpoint disable</span><br><span class="line">启用断点: breakpoint enable</span><br><span class="line">以上命令都需要指定断点ID参数(支持通配符).</span><br><span class="line">当逻辑断点设置为diable时, 它下方的所有位置断点都将不再生效.</span><br><span class="line">(lldb) breakpoint disable 1</span><br><span class="line">1 breakpoints disabled.</span><br><span class="line">(lldb) breakpoint disable 2.1</span><br><span class="line">1 breakpoints disabled.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">(lldb) breakpoint enable 1</span><br><span class="line">1 breakpoints enabled.</span><br><span class="line">(lldb) breakpoint enable 2.1</span><br><span class="line">1 breakpoints enabled.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">还可用通配符*指定断点.</span><br><span class="line">如下示例先是禁用了逻辑断点1下的所有位置断点, 而后启用了位置断点1.1</span><br><span class="line">(lldb) breakpoint disable 1.*</span><br><span class="line">2 breakpoint disabled*</span><br><span class="line">(lldb) breakpoint enable 1.1</span><br><span class="line">1 breakpoint enabled.</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">删除断点</span><br><span class="line">(lldb) breakpoint delete 1</span><br><span class="line">1 breakpoints deleted; 2 breakpoint locations disabled.</span><br></pre></td></tr></table></figure>
+<h3 id="2-2-3-watchpoint"><a href="#2-2-3-watchpoint" class="headerlink" title="2.2.3 watchpoint"></a>2.2.3 watchpoint</h3><p>其与breakpoint很类似，主要用于在感知到内存发生变化后触发断点。内存断点受硬件上运行被调试程序的寄存器数量的限制。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// 针对变量设置内存断点</span><br><span class="line">(lldb) watchpoint set variable places</span><br><span class="line">Watchpoint created: Watchpoint 1: addr = 0x100004a40 size = 8 state = enabled type = w</span><br><span class="line">    declare @ &#x27;main.swift:7&#x27;</span><br><span class="line">    watchpoint spec = &#x27;places&#x27;</span><br><span class="line">    new value: 1 value</span><br><span class="line"></span><br><span class="line">// 针对表达式返回值设置内存断点</span><br><span class="line">(lldb) watchpoint set expression -- (int *)$places + 8</span><br><span class="line">Watchpoint created: Watchpoint 2: addr = 0x100005f33 size = 8 state = enabled type = w</span><br><span class="line">    new value: 0x0000000000000000</span><br><span class="line"></span><br><span class="line">// 默认情况下，内存断点监视对变量或地址的写访问。 通过传递值为 read、write 或 read_write 的 --watch (-w) 选项来指定对监视器的访问类型。</span><br><span class="line"></span><br><span class="line">// 默认情况下，观察点使用目标机器的指针字节大小监视读取和写入。 通过传递值为 1、2、4 或 8 的 --size (-s) 选项，更改用于监视区域的字节数。</span><br></pre></td></tr></table></figure>
+<p>内存断点的删除、修改等操作同breakpoint</p>
+<h3 id="2-2-4-thread"><a href="#2-2-4-thread" class="headerlink" title="2.2.4 thread"></a>2.2.4 thread</h3><ul>
+<li>n 下一行（next的简写）</li>
+<li>c 继续（continue的简写）</li>
+<li>s 进入函数（step into的简写）</li>
+<li>finish 跳出当前函数<br>上面是命令行的输入，对应下面的GUI按钮。<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/flowcontroller.png" class="" title="流程控制">
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// 返回某值</span><br><span class="line">thread return value </span><br><span class="line"></span><br><span class="line">// 跳过2条语句</span><br><span class="line">thread jump --by 2</span><br><span class="line"></span><br><span class="line">// 这两个命令也与流程控制类似，不过它们属于frame</span><br><span class="line">up\down</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="2-2-5-image"><a href="#2-2-5-image" class="headerlink" title="2.2.5 image"></a>2.2.5 image</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// 列出所有依赖库</span><br><span class="line"></span><br><span class="line">(lldb) image list</span><br><span class="line">[  0] 69F6C476-555D-3987-B162-E62C9A1D718C 0x000000010008c000 /var/mobile/Containers/Bundle/Application/D6B51B8B-00F8-443F-9B8E-EF47C2330D2B/WhatsApp.app/WhatsApp (0x000000010008c000)</span><br><span class="line">[  1] 3134CFB2-F722-310E-A2C7-42AE4DC131AB 0x00000001017ec000 /Library/MobileSubstrate/MobileSubstrate.dylib (0x00000001017ec000)</span><br><span class="line">[  2] 4DB79D94-6764-3180-99C9-5615E29073E7 0x0000000196848000 /Users/piao/Library/Developer/Xcode/iOS DeviceSupport/9.0.2 (13A452)/Symbols/usr/lib/libSystem.B.dylib</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">// 查找ASLR偏移</span><br><span class="line">(lldb) image list -f -o WhatsApp</span><br><span class="line">[  0] /var/mobile/Containers/Bundle/Application/D6B51B8B-00F8-443F-9B8E-EF47C2330D2B/WhatsApp.app/WhatsApp 0x000000000008c000(0x000000010008c000)</span><br><span class="line">ASLR偏移：0x000000000008c000</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// 打印加载模块列表</span><br><span class="line"></span><br><span class="line">(lldb) image list -f -o // 通常带这两个参数使用</span><br><span class="line">[  0] 40E417A4-F966-3DB4-B028-B0272DC016A7 0x000a0000 /Users/piao/Library/Developer/Xcode/DerivedData/debug-bdkhskdqykkoqmhjedilckzvpuls/Build/Products/Debug-iphoneos/debug.app/debug </span><br><span class="line">      /Users/piao/Library/Developer/Xcode/DerivedData/debug-bdkhskdqykkoqmhjedilckzvpuls/Build/Products/Debug-iphoneos/debug.app.dSYM/Contents/Resources/DWARF/debug</span><br><span class="line">[  1] 011601C0-F561-3306-846B-94A7C8C841DA 0x2d9e6000 /Users/piao/Library/Developer/Xcode/iOS DeviceSupport/7.1.2 (11D257)/Symbols/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics</span><br><span class="line">查找原始地址信息</span><br><span class="line">在可执行文件或任何共享库中查找原始地址的信息。</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// image lookup -a 表达式</span><br><span class="line">例子：</span><br><span class="line">(lldb) image lookup -a $pc</span><br><span class="line">Address: debug[0x0000b236] (debug.__TEXT.__text + 1254)</span><br><span class="line">Summary: debug`main + 58 at main.m:16</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//查找类信息</span><br><span class="line">image lookup --type UIViewController</span><br><span class="line">image lookup -t UIViewController</span><br><span class="line"></span><br><span class="line">//查找符号</span><br><span class="line">image lookup --name viewDidLoad</span><br><span class="line">image lookup -n viewDidLoad</span><br><span class="line"></span><br><span class="line">//查找地址</span><br><span class="line">image lookup --address 0x000000018ff60490</span><br><span class="line">image lookup -a 0x000000018ff60490</span><br></pre></td></tr></table></figure>
+
+<h1 id="三、使用LLDB"><a href="#三、使用LLDB" class="headerlink" title="三、使用LLDB"></a>三、使用LLDB</h1><p>上面从语法角度讲述了LLDB所提供的部分命令以及命令的用法，下面从实际工作的角度来说明，为什么需要LLDB来提升工作效率。<br>在工程较小的情况下，发现问题，修改代码，运行以查看结果是否正确，这个过程耗费的时间不大。但是在工程量比较大的情况下，即使仅仅修改一行代码，那么编译、运行所花费的时间也可能有3分钟左右。假如，每天做30次这样的动作，那么耗费的时间将是90分钟，这个时间还是十分惊人的！！！<br>另外，我们在调试时对代码的修改可能是临时性的，最好能经过验证、并且尽可能的排除所有的问题后，再对代码进行正式修改。这些都需要借助LLDB的神奇魔力。<br>以下说明以Xcode提供的GUI和命令窗口来实现。我们的大部分操作都是可以通过如下图所示的界面来完成的。</p>
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/edit-breakpoint.png" class="" title="修改断点">
+
+<h2 id="3-1-修改返回值"><a href="#3-1-修改返回值" class="headerlink" title="3.1 修改返回值"></a>3.1 修改返回值</h2><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="type">int</span>)rtInt &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;rtInt&quot;</span>);</span><br><span class="line">    <span class="comment">// 在下面一行设置断点，并添加如下图所示内容(方法1)</span></span><br><span class="line">    <span class="type">int</span> n = <span class="number">10</span>;</span><br><span class="line">    <span class="comment">// 在下面一行设置断点，并添加如下图所示内容(方法2)</span></span><br><span class="line">    <span class="keyword">return</span> n;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/rtint.png" class="" title="返回整数">
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/rtint2.png" class="" title="返回整数">
+
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="built_in">NSDictionary</span> *)rtDict &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;rtDict&quot;</span>);</span><br><span class="line">    <span class="built_in">NSDictionary</span> *dict= @&#123;<span class="string">@&quot;key&quot;</span>:<span class="string">@&quot;value&quot;</span>&#125;;</span><br><span class="line">    <span class="comment">// 设置断点，然后控制台输入，并在LLDB的环境里定义变量，并把变量赋值给我们需要的对象</span></span><br><span class="line">    <span class="comment">// e NSDictionary *$otherDict = @&#123;@&quot;key1&quot;:@&quot;value1&quot;&#125;</span></span><br><span class="line">    <span class="comment">// e dict = $otherDict</span></span><br><span class="line">    <span class="keyword">return</span> dict;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="3-2-输出布局信息"><a href="#3-2-输出布局信息" class="headerlink" title="3.2 输出布局信息"></a>3.2 输出布局信息</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">po [self.view recursizeDescription]</span><br><span class="line">error: Execution was interrupted, reason: Attempted to dereference an invalid ObjC Object or send it an unrecognized selector.</span><br><span class="line">The process has been returned to the state before expression evaluation.</span><br></pre></td></tr></table></figure>
+<p>以上只是简单的UI调试，可以使用Xcode提供的Debug View Hierarchy来进行更深入的排查。</p>
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/gui-debug.png" class="" title="特定次数才需要暂停">
+
+<h2 id="3-3-修改UI并实时看到"><a href="#3-3-修改UI并实时看到" class="headerlink" title="3.3 修改UI并实时看到"></a>3.3 修改UI并实时看到</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line">    // Do any additional setup after loading the view.</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    UIButton *btn = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 200, 80)];</span><br><span class="line">    [self.view addSubview:btn];</span><br><span class="line">    [btn addTarget:self action:@selector(click:) forControlEvents:UIControlEventTouchUpInside];</span><br><span class="line">    [btn setTitleColor:UIColor.redColor forState:UIControlStateNormal];</span><br><span class="line">    [btn setTitle:@&quot;点我&quot;forState:UIControlStateNormal];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)click:(UIButton *)btn &#123;</span><br><span class="line">    // 在这里设断定，并输入如下命令</span><br><span class="line">    // e (void)[self.view setBackgroundColor:[UIColor grayColor]] 修改颜色</span><br><span class="line">    // e (void)[CATransaction flush]  // 把颜色的修改通过渲染更新到界面</span><br><span class="line">    NSLog(@&quot;here&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意<br>以上命令并不总是能成功，在viewDidLoad中设置断点然后进行操作就不行</p>
+</blockquote>
+<h2 id="3-4-注意返回类型"><a href="#3-4-注意返回类型" class="headerlink" title="3.4 注意返回类型"></a>3.4 注意返回类型</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">在上面例子中，如果输入</span><br><span class="line">e [self.view setBackgroundColor:[UIColor grayColor]]</span><br><span class="line">则会报这个错误</span><br><span class="line">error: expression failed to parse:</span><br><span class="line">error: &lt;user expression 0&gt;:1:12: no known method &#x27;-setBackgroundColor:&#x27;; cast the message send to the method&#x27;s return type</span><br><span class="line">[self.view setBackgroundColor:[UIColor grayColor]]</span><br><span class="line">~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span><br><span class="line"></span><br><span class="line">// 上面的错误信息告诉LLDB不知道返回类型，所以需要强制类型转换</span><br></pre></td></tr></table></figure>
+<h2 id="3-5-跳过某些语句"><a href="#3-5-跳过某些语句" class="headerlink" title="3.5 跳过某些语句"></a>3.5 跳过某些语句</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">- (void)viewDidLoad &#123;</span><br><span class="line">    [super viewDidLoad];</span><br><span class="line">    // Do any additional setup after loading the view.</span><br><span class="line">    </span><br><span class="line">    NSLog(@&quot;%d&quot;, __LINE__); // 假设此行是41</span><br><span class="line">    NSLog(@&quot;%d&quot;, __LINE__); // 在此行设置断点，thread jump --by 1</span><br><span class="line">    NSLog(@&quot;%d&quot;, __LINE__);</span><br><span class="line">    NSLog(@&quot;%d&quot;, __LINE__);</span><br><span class="line">    NSLog(@&quot;%d&quot;, __LINE__);</span><br><span class="line">    NSLog(@&quot;%d&quot;, __LINE__);</span><br><span class="line"></span><br><span class="line">    // 以下是输出，可以看出跳过了41行</span><br><span class="line">    baseStudy[33708:346268] 41</span><br><span class="line">    baseStudy[33708:346268] 43</span><br><span class="line">    baseStudy[33708:346268] 44</span><br><span class="line">    baseStudy[33708:346268] 45</span><br><span class="line">    baseStudy[33708:346268] 46</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="3-6-命令后执行"><a href="#3-6-命令后执行" class="headerlink" title="3.6 命令后执行"></a>3.6 命令后执行</h2><img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/ecmd.png" class="" title="命令后执行">
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">// 这是上面设置的命令</span><br><span class="line">// -C 表示后面可以添加新的命令</span><br><span class="line">// -G true标识断点不停止，直接运行</span><br><span class="line">br set -l 43 -f ViewController.m  -C &#x27;po @&quot;onthway&quot;&#x27; -G true</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">// 可以看到断点其实被设置3个（因为循环了3次）</span><br><span class="line">5: file = &#x27;ViewController.m&#x27;, line = 43, exact_match = 0, locations = 1, resolved = 1, hit count = 2 Options: enabled auto-continue </span><br><span class="line">    Breakpoint commands:</span><br><span class="line">      po @&quot;onthway&quot;</span><br><span class="line"></span><br><span class="line">  5.1: where = baseStudy`-[ViewController viewDidLoad] + 90 at ViewController.m:43:9, address = 0x000000010d564cba, resolved, hit count = 2 </span><br><span class="line"></span><br><span class="line">6: file = &#x27;ViewController.m&#x27;, line = 43, exact_match = 0, locations = 1, resolved = 1, hit count = 1 Options: enabled auto-continue </span><br><span class="line">    Breakpoint commands:</span><br><span class="line">      po @&quot;onthway&quot;</span><br><span class="line"></span><br><span class="line">  6.1: where = baseStudy`-[ViewController viewDidLoad] + 90 at ViewController.m:43:9, address = 0x000000010d564cba, resolved, hit count = 1 </span><br><span class="line"></span><br><span class="line">7: file = &#x27;ViewController.m&#x27;, line = 43, exact_match = 0, locations = 1, resolved = 1, hit count = 0 Options: enabled auto-continue </span><br><span class="line">    Breakpoint commands:</span><br><span class="line">      po @&quot;onthway&quot;</span><br><span class="line"></span><br><span class="line">  7.1: where = baseStudy`-[ViewController viewDidLoad] + 90 at ViewController.m:43:9, address = 0x000000010d564cba, resolved, hit count = 0 </span><br></pre></td></tr></table></figure>
+<h2 id="3-7-执行一次的断点"><a href="#3-7-执行一次的断点" class="headerlink" title="3.7 执行一次的断点"></a>3.7 执行一次的断点</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">// 把上面的断点语句添加--one-shot true</span><br><span class="line">br set --one-shot true -l 43 -f ViewController.m   -C &#x27;po @&quot;onthway&quot;&#x27; -G true</span><br><span class="line"></span><br><span class="line">// 输出3次  ontheway</span><br><span class="line">3: file = &#x27;/Users/wangwenjun04/Desktop/myfolder/studyCode/baseStudy/baseStudy/ViewController.m&#x27;, line = 43, exact_match = 0, locations = 1, resolved = 1, hit count = 3</span><br><span class="line"></span><br><span class="line">  3.1: where = baseStudy`-[ViewController viewDidLoad] + 90 at ViewController.m:43:9, address = 0x0000000103ea0cba, resolved, hit count = 3 </span><br><span class="line"></span><br><span class="line">4: file = &#x27;/Users/wangwenjun04/Desktop/myfolder/studyCode/baseStudy/baseStudy/ViewController.m&#x27;, line = 50, exact_match = 0, locations = 1, resolved = 1, hit count = 1</span><br><span class="line"></span><br><span class="line">  4.1: where = baseStudy`-[ViewController viewDidLoad] + 199 at ViewController.m:50:22, address = 0x0000000103ea0d27, resolved, hit count = 1 </span><br><span class="line"></span><br><span class="line">// 此断点只其一次作用</span><br><span class="line">7: file = &#x27;ViewController.m&#x27;, line = 43, exact_match = 0, locations = 1, resolved = 1, hit count = 0 Options: enabled one-shot auto-continue </span><br><span class="line">    Breakpoint commands:</span><br><span class="line">      po @&quot;onthway&quot;</span><br><span class="line"></span><br><span class="line">  7.1: where = baseStudy`-[ViewController viewDidLoad] + 90 at ViewController.m:43:9, address = 0x0000000103ea0cba, resolved, hit count = 0 </span><br></pre></td></tr></table></figure>
+<h2 id="3-8-变量为特定次数"><a href="#3-8-变量为特定次数" class="headerlink" title="3.8 变量为特定次数"></a>3.8 变量为特定次数</h2><p>假如有以下代码，当i的值是9的时候会出现问题。那么按照上述基本的调试方法，在if这一行设置断点，然后要通过8次的暂停才能在我们想要的地方停住。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSInteger</span> count = array.count;</span><br><span class="line"><span class="keyword">for</span> (<span class="built_in">NSInteger</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (i % <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="comment">// 做一些事情</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// 做另外一些事情</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/time.png" class="" title="特定次数才需要暂停">
+<p>通过设置跳过前8次执行，LLDB自动在我们想要的时候暂停程序的执行。通过设置ingore的次数，我们的调率得到了提升。</p>
+<h2 id="3-9-变量为特定的值"><a href="#3-9-变量为特定的值" class="headerlink" title="3.9 变量为特定的值"></a>3.9 变量为特定的值</h2><p>假如我们有如下代码:</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> printName(<span class="built_in">NSString</span> *name) &#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@&quot;name=%@&quot;</span>, name);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> main(<span class="type">int</span> argc, <span class="keyword">const</span> <span class="type">char</span> * argv[]) &#123;    </span><br><span class="line">    printName(<span class="string">@&quot;jzm&quot;</span>);</span><br><span class="line">    printName(<span class="string">@&quot;xjp&quot;</span>);</span><br><span class="line">    printName(<span class="string">@&quot;hjt&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们的需求是在name是xjp时暂停，那么按照简单的调试方法，只能在NSLog那一行来设置断点，然后再每次断点停住的时候检查name的值是否是xjp。我们可以更家搞笑，通过设置条件断点的方式。</p>
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/condition.png" class="" title="条件断点">
+
+
+<h1 id="三、扩展LLDB"><a href="#三、扩展LLDB" class="headerlink" title="三、扩展LLDB"></a>三、扩展LLDB</h1><p>LLDB、Xcode提供了便捷的方式进行扩展，这些扩展都基于LLDB提供的接口。</p>
+<h2 id="3-1-工程级扩展"><a href="#3-1-工程级扩展" class="headerlink" title="3.1 工程级扩展"></a>3.1 工程级扩展</h2><p>我们可以专门针对某个工程进行扩展，其方法很简单。新建一个用于扩展LLDB的python文件，然后选择edit scheme进行配置。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 修改提示语</span><br><span class="line">setting set prompt [wwj-lldb]$</span><br></pre></td></tr></table></figure>
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/pop.png" class="" title="修改提示">
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 新建一个命令别名，用于刷新UI</span><br><span class="line">command alias wflush e (void)[CATransaction flush]</span><br></pre></td></tr></table></figure>
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/wflush.png" class="" title="wflush">
+<p>edit scheme进行如下配置</p>
+<img src="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/project-custom.png" class="" title="project-custom">
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setting set prompt [wwj-lldb]$</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">command alias wflush e (void)[CATransaction flush]</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2-系统级扩展"><a href="#3-2-系统级扩展" class="headerlink" title="3.2 系统级扩展"></a>3.2 系统级扩展</h2><p>在~&#x2F;.lldbinit文件中添加自定义命令，自定义命令与<a href="#hexo-%E5%B7%A5%E7%A8%8B%E7%BA%A7%E6%89%A9%E5%B1%95">跳转到本文锚点</a>相近。<br>FaceBook开源的<a target="_blank" rel="noopener" href="https://en.wiktionary.org/wiki/chisel">chisel</a>就是采用的此种方式。<br>其提供了许多扩展命令。</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+<th>iOS</th>
+<th>OS X</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>pviews</td>
+<td>Print the recursive view description for the key window.</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>pvc</td>
+<td>Print the recursive view controller description for the key window.</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>visualize</td>
+<td>Open a <code>UIImage</code>, <code>CGImageRef</code>, <code>UIView</code>, <code>CALayer</code>, <code>NSData</code> (of an image), <code>UIColor</code>, <code>CIColor</code>, or <code>CGColorRef</code> in Preview.app on your Mac.</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>fv</td>
+<td>Find a view in the hierarchy whose class name matches the provided regex.</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>fvc</td>
+<td>Find a view controller in the hierarchy whose class name matches the provided regex.</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>show&#x2F;hide</td>
+<td>Show or hide the given view or layer. You don’t even have to continue the process to see the changes!</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>mask&#x2F;unmask</td>
+<td>Overlay a view or layer with a transparent rectangle to visualize where it is.</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+<tr>
+<td>border&#x2F;unborder</td>
+<td>Add a border to a view or layer to visualize where it is.</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>caflush</td>
+<td>Flush the render server (equivalent to a “repaint” if no animations are in-flight).</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>bmessage</td>
+<td>Set a symbolic breakpoint on the method of a class or the method of an instance without worrying which class in the hierarchy actually implements the method.</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>wivar</td>
+<td>Set a watchpoint on an instance variable of an object.</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>presponder</td>
+<td>Print the responder chain starting from the given object.</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>…</td>
+<td>… and many more!</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="3-3-高阶扩展"><a href="#3-3-高阶扩展" class="headerlink" title="3.3 高阶扩展"></a>3.3 高阶扩展</h2><p>通过LLVM工程自己编译LLDB代码（难度高，有兴趣的高手可以尝试并分享给大家）。</p>
+<h1 id="四、参考资料"><a href="#四、参考资料" class="headerlink" title="四、参考资料"></a>四、参考资料</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/da2e78fbf7d6">全面剖析 LLDB 调试器</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/pro648/tips/blob/master/sources/LLDB%E7%9A%84%E4%BD%BF%E7%94%A8.md">LLDB的使用</a></li>
+<li><a target="_blank" rel="noopener" href="http://southpeak.github.io/2015/01/25/tool-lldb/">LLDB调试器使用简介</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/videos/play/wwdc2019/429/">LLDB: Beyond “po”</a></li>
+<li><a target="_blank" rel="noopener" href="https://objccn.io/issue-19-2/">与调试器共舞 - LLDB 的华尔兹</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/videos/play/wwdc2018/412">Advanced Debugging with Xcode and LLDB</a></li>
+<li><a target="_blank" rel="noopener" href="https://juejin.cn/post/6844903504042000391">自定义LLDB命令实战</a></li>
+<li><a target="_blank" rel="noopener" href="https://muzico.gitee.io/niao/15704402390326.html#toc_40">LLDB基础</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/library/archive/documentation/General/Conceptual/lldb-guide/chapters/Introduction.html#//apple_ref/doc/uid/TP40016717-CH1-DontLinkElementID_42">LLDB Debugging Guide</a></li>
+<li><a target="_blank" rel="noopener" href="https://developer.apple.com/library/archive/documentation/General/Conceptual/lldb-guide/chapters/Introduction.html#//apple_ref/doc/uid/TP40016717-CH1-DontLinkElementID_42">LLDB Debugging Guide</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/swift/" rel="tag"># swift</a>
+              <a href="/tags/OC/" rel="tag"># OC</a>
+              <a href="/tags/%E8%B0%83%E8%AF%95/" rel="tag"># 调试</a>
+              <a href="/tags/Xcode/" rel="tag"># Xcode</a>
+              <a href="/tags/LLDB/" rel="tag"># LLDB</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/12/09/%E6%8E%8C%E6%8F%A1Swift%E6%B3%9B%E5%9E%8B%EF%BC%9A%E4%B8%80%E4%B8%AA%E5%AE%9E%E9%99%85%E7%9A%84%E4%BB%A3%E7%A0%81%E9%87%8D%E7%94%A8%E7%A4%BA%E4%BE%8B/" rel="prev" title="掌握Swift泛型：一个实际的代码重用示例">
+                  <i class="fa fa-chevron-left"></i> 掌握Swift泛型：一个实际的代码重用示例
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">ontheway</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.1/search.js" integrity="sha256-1kfA5uHPf65M5cphT2dvymhkuyHPQp5A53EGZOnOLmc=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+
+</body>
+</html>
