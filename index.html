@@ -223,9 +223,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">Posted on</span>
-      
 
-      <time title="Created: 2022-12-10 08:11:12 / Modified: 21:35:37" itemprop="dateCreated datePublished" datetime="2022-12-10T08:11:12+08:00">2022-12-10</time>
+      <time title="Created: 2022-12-10 08:11:12" itemprop="dateCreated datePublished" datetime="2022-12-10T08:11:12+08:00">2022-12-10</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2022-12-11 09:41:48" itemprop="dateModified" datetime="2022-12-11T09:41:48+08:00">2022-12-11</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -251,9 +257,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
-          <h1 id="一、引言"><a href="#一、引言" class="headerlink" title="一、引言"></a>一、引言</h1><p>作为程序员，日常编写代码的时间远小于调试的时间，所以熟练掌握调试工具能够大幅提高工作效率。本文针对iOS开发过程中通过Xcode使用LLDB进行调试进行的讲解，以有提升自己对此知识的掌握。如果同时能够帮助到广大网友，那么我讲十分开心。</p>
-<p>在日常工作中，大部分调试动作都是设置一些断点，在程序被暂停时查看执行逻辑、变量的值等，然后定位问题，并根据具体问题进行修改。这应该是大部分程序员的日常调试行为与状态。此种调试行为仅使用LLDB所提供的极少的能力。并且，在大部分情况下，还有不少程序员会借助在源代码里添加NSLog之类的日志代码，来进行辅助调试。虽然以上调试行为是必要的、也解决了不少的问题，但是其十分笨拙与原始，并且效率实在是较低。</p>
-<p>本文将对LLDB的部分不常用功能进行说明，有助于我们掌握这一强大的工具，尽可能的提升工作效率</p>
+          <h1 id="一、引言"><a href="#一、引言" class="headerlink" title="一、引言"></a>一、引言</h1><h2 id="1-1-目的"><a href="#1-1-目的" class="headerlink" title="1.1 目的"></a>1.1 目的</h2><p>程序员日常编写代码的时间远小于调试的时间，所以熟练掌握调试工具能够大幅降低调试所要花的时间，从而大幅提高工作效率。本文针对iOS开发过程中通过Xcode与&#x2F;和LLDB进行调试进行的讲解，以提升对LLDB的掌握。如果同时能够帮助到广大网友，那么我讲十分开心。</p>
+<h2 id="1-2-日常调试"><a href="#1-2-日常调试" class="headerlink" title="1.2 日常调试"></a>1.2 日常调试</h2><p>在日常工作中，大部分调试动作都是设置一些断点，在程序被暂停时查看执行逻辑、变量的值等，然后定位问题，并根据具体问题修改代码。这应该是大部分程序员的日常调试行为与状态。此种调试行为仅使用LLDB所提供的极少的能力。<br>除此之外，在大部分情况下程序员会借助在源代码里添加NSLog之类的日志代码，来进行辅助调试。</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2022/12/10/LLDB%E8%AF%A6%E8%A7%A3/#more" rel="contents">
